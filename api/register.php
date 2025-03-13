@@ -1,44 +1,36 @@
 <?php
 
-header("Content-Type: application/json");
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST");
+header("Access-Control-Allow-Headers: Content-Type");
 
-// Učitavanje podataka iz POST-a
-$raw_data = file_get_contents("php://input");
 
-// Provera da li postoje podaci
-if (empty($raw_data)) {
+require_once "config.php";
+
+// Preuzimanje JSON podataka iz zahteva
+$input = file_get_contents("php://input");
+$data = json_decode($input, true);
+
+// Provera da li su podaci poslati
+if (!$data) {
     echo json_encode(["error" => "Nema JSON podataka!"]);
     exit;
 }
 
-// Dekodiranje JSON podataka
-$data = json_decode($raw_data, true);
-
-// Provera greške pri dekodiranju JSON-a
-if (json_last_error() !== JSON_ERROR_NONE) {
-    echo json_encode(["error" => "Neispravni JSON podaci!", "json_error" => json_last_error_msg()]);
-    exit;
-}
-
-// Provera da li su svi podaci prisutni
+// Provera da li su sva polja popunjena
 if (empty($data['firstname']) || empty($data['lastname']) || empty($data['email']) || empty($data['password'])) {
     echo json_encode(["error" => "Sva polja su obavezna!"]);
     exit;
 }
 
-// Dalja logika, kao što je unos u bazu
-$firstname = $data['firstname'];
-$lastname = $data['lastname'];
-$email = $data['email'];
+$firstname = htmlspecialchars(strip_tags($data['firstname']));
+$lastname = htmlspecialchars(strip_tags($data['lastname']));
+$email = filter_var($data['email'], FILTER_SANITIZE_EMAIL);
 $password = password_hash($data['password'], PASSWORD_DEFAULT);
 
-// PDO konekcija sa bazom
 try {
-    $pdo = new PDO("mysql:host=localhost;dbname=mega_store", "root", "");
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    // Provera da li postoji korisnik sa istim email-om
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE email = :email");
+    // Provera da li email već postoji
+    $stmt = $pdo->prepare("SELECT id FROM users WHERE email = :email");
     $stmt->bindParam(":email", $email);
     $stmt->execute();
 
@@ -47,7 +39,7 @@ try {
         exit;
     }
 
-    // Unos novog korisnika u bazu
+    // Ubacivanje korisnika
     $stmt = $pdo->prepare("INSERT INTO users (firstname, lastname, email, password) VALUES (:firstname, :lastname, :email, :password)");
     $stmt->bindParam(":firstname", $firstname);
     $stmt->bindParam(":lastname", $lastname);
@@ -60,6 +52,7 @@ try {
         echo json_encode(["error" => "Došlo je do greške pri registraciji."]);
     }
 } catch (PDOException $e) {
-    echo json_encode(["error" => "Greška u bazi podataka: " . $e->getMessage()]);
+    echo json_encode(["error" => "Greška u bazi: " . $e->getMessage()]);
 }
+
 ?>

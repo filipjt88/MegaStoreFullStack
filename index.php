@@ -9,6 +9,7 @@
 
 <body>
 
+<!-- <button onclick="testRegister()">Pošalji test podatke</button> -->
 
     <script src="js/main.js"></script>
 </body>
