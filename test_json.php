@@ -1,5 +1,6 @@
 <?php
 
+// Test json
 // Postavljanje Content-Type na JSON
 header('Content-Type: application/json');
 
