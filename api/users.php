@@ -14,5 +14,4 @@ try {
 } catch (PDOException $e) {
     echo json_encode(["error" => "Greška u bazi: " . $e->getMessage()]);
 }
-
 ?>
