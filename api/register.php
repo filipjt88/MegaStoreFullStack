@@ -5,7 +5,6 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type");
 
-
 require_once "config.php";
 
 // Preuzimanje JSON podataka iz zahteva
@@ -47,6 +46,7 @@ try {
     $stmt->bindParam(":email", $email);
     $stmt->bindParam(":password", $password);
 
+    
     if ($stmt->execute()) {
         echo json_encode(["success" => "Korisnik je uspešno registrovan!"]);
     } else {
