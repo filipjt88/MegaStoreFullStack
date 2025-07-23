@@ -1,3 +1,5 @@
+
+// Main
 fetch("http://localhost/megaStoreFullStack/api/register.php", {
     method: "POST",
     headers: {
